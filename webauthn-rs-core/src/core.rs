@@ -77,6 +77,7 @@ pub struct ChallengeRegisterBuilder {
     attestation_formats: Option<Vec<AttestationFormat>>,
     reject_synchronised_authenticators: bool,
     hints: Option<Vec<PublicKeyCredentialHints>>,
+    challenge: Option<Challenge>,
 }
 
 /// A builder allowing customisation of a client authentication challenge.
@@ -87,6 +88,7 @@ pub struct ChallengeAuthenticateBuilder {
     extensions: Option<RequestAuthenticationExtensions>,
     allow_backup_eligible_upgrade: bool,
     hints: Option<Vec<PublicKeyCredentialHints>>,
+    challenge: Option<Challenge>,
 }
 
 impl ChallengeRegisterBuilder {
@@ -155,6 +157,12 @@ impl ChallengeRegisterBuilder {
         self.attestation_formats = attestation_formats;
         self
     }
+
+    /// Set the challenge to be used in this request. If not set, a random challenge will be generated.
+    pub fn challenge(mut self, challenge: Vec<u8>) -> Self {
+        self.challenge = Some(Challenge::new(challenge));
+        self
+    }
 }
 
 impl ChallengeAuthenticateBuilder {
@@ -176,6 +184,12 @@ impl ChallengeAuthenticateBuilder {
     /// Add the set of hints for which public keys may satisfy this request.
     pub fn hints(mut self, hints: Option<Vec<PublicKeyCredentialHints>>) -> Self {
         self.hints = hints;
+        self
+    }
+
+    /// Set the challenge to be used in this request. If not set, a random challenge will be generated.
+    pub fn challenge(mut self, challenge: Vec<u8>) -> Self {
+        self.challenge = Some(Challenge::new(challenge));
         self
     }
 }
@@ -257,6 +271,7 @@ impl WebauthnCore {
             reject_synchronised_authenticators: Default::default(),
             hints: Default::default(),
             attestation_formats: Default::default(),
+            challenge: Default::default(),
         })
     }
 
@@ -291,9 +306,10 @@ impl WebauthnCore {
             attestation_formats,
             reject_synchronised_authenticators,
             hints,
+            challenge,
         } = challenge_builder;
 
-        let challenge = self.generate_challenge();
+        let challenge = challenge.unwrap_or_else(|| self.generate_challenge());
 
         let resident_key = if require_resident_key {
             Some(ResidentKeyRequirement::Required)
@@ -969,6 +985,7 @@ impl WebauthnCore {
             extensions: Default::default(),
             allow_backup_eligible_upgrade: Default::default(),
             hints: Default::default(),
+            challenge: Default::default(),
         })
     }
 
@@ -992,9 +1009,10 @@ impl WebauthnCore {
             extensions,
             allow_backup_eligible_upgrade,
             hints,
+            challenge,
         } = challenge_builder;
 
-        let chal = self.generate_challenge();
+        let chal = challenge.unwrap_or_else(|| self.generate_challenge());
 
         // Get the user's existing creds if any.
         let ac = creds
