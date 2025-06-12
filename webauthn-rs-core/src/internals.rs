@@ -372,7 +372,7 @@ fn authenticator_data_parser<T: Ceremony>(i: &[u8]) -> nom::IResult<&[u8], Authe
 #[derive(Debug, Clone)]
 pub struct AuthenticatorData<T: Ceremony> {
     /// Hash of the relying party id.
-    pub(crate) rp_id_hash: [u8; 32],
+    pub rp_id_hash: [u8; 32],
     /// The counter of this credentials activations.
     pub counter: u32,
     /// Flag if the user was present.
@@ -417,17 +417,17 @@ pub(crate) struct AttestationObjectInner<'a> {
 #[derive(Debug)]
 pub struct AttestationObject<T: Ceremony> {
     /// format.
-    pub(crate) fmt: String,
+    pub fmt: String,
     /// <https://w3c.github.io/webauthn/#generating-an-attestation-object>
-    pub(crate) att_stmt: serde_cbor_2::Value,
+    pub att_stmt: serde_cbor_2::Value,
     /// auth_data.
-    pub(crate) auth_data: AuthenticatorData<T>,
+    pub auth_data: AuthenticatorData<T>,
     /// auth_data_bytes.
-    pub(crate) auth_data_bytes: Vec<u8>,
+    pub auth_data_bytes: Vec<u8>,
     /// ep_att
-    pub(crate) _ep_att: Option<bool>,
+    pub _ep_att: Option<bool>,
     /// large_blob_key
-    pub(crate) _large_blob_key: Option<Vec<u8>>,
+    pub _large_blob_key: Option<Vec<u8>>,
 }
 
 impl<T: Ceremony> TryFrom<&[u8]> for AttestationObject<T> {
