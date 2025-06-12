@@ -500,14 +500,21 @@ impl<T: Ceremony> TryFrom<&AuthenticatorAttestationResponseRaw>
     }
 }
 
+/// Response from an authenticator for an authentication assertion
 #[derive(Debug)]
-pub(crate) struct AuthenticatorAssertionResponse<T: Ceremony> {
-    pub(crate) authenticator_data: AuthenticatorData<T>,
-    pub(crate) authenticator_data_bytes: Vec<u8>,
-    pub(crate) client_data: CollectedClientData,
-    pub(crate) client_data_bytes: Vec<u8>,
-    pub(crate) signature: Vec<u8>,
-    pub(crate) _user_handle: Option<Vec<u8>>,
+pub struct AuthenticatorAssertionResponse<T: Ceremony> {
+    /// The authenticator data, as parsed.
+    pub authenticator_data: AuthenticatorData<T>,
+    /// The authenticator data, as bytes.
+    pub authenticator_data_bytes: Vec<u8>,
+    /// The client data, as parsed.
+    pub client_data: CollectedClientData,
+    /// The client data, as bytes.
+    pub client_data_bytes: Vec<u8>,
+    /// The signature, as bytes.
+    pub signature: Vec<u8>,
+    /// Optional user handle, as bytes.
+    pub _user_handle: Option<Vec<u8>>,
 }
 
 impl<T: Ceremony> TryFrom<&AuthenticatorAssertionResponseRaw>
