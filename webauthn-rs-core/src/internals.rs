@@ -469,11 +469,16 @@ impl From<CredProtectResponse> for u8 {
     }
 }
 
-pub(crate) struct AuthenticatorAttestationResponse<T: Ceremony> {
-    pub(crate) attestation_object: AttestationObject<T>,
-    pub(crate) client_data_json: CollectedClientData,
-    pub(crate) client_data_json_bytes: Vec<u8>,
-    pub(crate) transports: Option<Vec<AuthenticatorTransport>>,
+/// Response to a attestation request.
+pub struct AuthenticatorAttestationResponse<T: Ceremony> {
+    /// The attestation object, as parsed.
+    pub attestation_object: AttestationObject<T>,
+    /// The client data JSON, as parsed.
+    pub client_data_json: CollectedClientData,
+    /// The client data JSON, as bytes.
+    pub client_data_json_bytes: Vec<u8>,
+    /// The transports used by the authenticator.
+    pub transports: Option<Vec<AuthenticatorTransport>>,
 }
 
 impl<T: Ceremony> TryFrom<&AuthenticatorAttestationResponseRaw>
