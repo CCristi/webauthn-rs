@@ -195,7 +195,7 @@ impl ChallengeAuthenticateBuilder {
 }
 
 /// Verify the attestation data and return the parsed attestation data and metadata
-pub fn verify_attestation(
+pub fn verify_registration_attestation(
     acd: &AttestedCredentialData,
     att_obj: &AttestationObject<Registration>,
     client_data_hash: &[u8],
@@ -649,7 +649,7 @@ impl WebauthnCore {
         debug!("attestation is: {:?}", &attest_format);
         debug!("attested credential data is: {:?}", &acd);
 
-        let (attestation_data, attestation_metadata) = verify_attestation(
+        let (attestation_data, attestation_metadata) = verify_registration_attestation(
             acd,
             &data.attestation_object,
             &client_data_json_hash,
