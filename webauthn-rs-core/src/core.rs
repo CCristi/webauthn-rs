@@ -194,6 +194,36 @@ impl ChallengeAuthenticateBuilder {
     }
 }
 
+/// Verify the attestation data and return the parsed attestation data and metadata
+pub fn verify_attestation(
+    acd: &AttestedCredentialData,
+    att_obj: &AttestationObject<Registration>,
+    client_data_hash: &[u8],
+    attest_format: &AttestationFormat,
+) -> Result<(ParsedAttestationData, AttestationMetadata), WebauthnError> {
+    let (parsed_attestation, metadata) = match attest_format {
+        AttestationFormat::FIDOU2F => (
+            verify_fidou2f_attestation(acd, att_obj, client_data_hash)?,
+            AttestationMetadata::None,
+        ),
+        AttestationFormat::Packed => verify_packed_attestation(acd, att_obj, client_data_hash)?,
+        // AttestationMetadata::None,
+        AttestationFormat::Tpm => verify_tpm_attestation(acd, att_obj, client_data_hash)?,
+        // AttestationMetadata::None,
+        AttestationFormat::AppleAnonymous => {
+            verify_apple_anonymous_attestation(acd, att_obj, client_data_hash)?
+        }
+        // AttestationMetadata::None,
+        AttestationFormat::AndroidKey => {
+            verify_android_key_attestation(acd, att_obj, client_data_hash)?
+        }
+        AttestationFormat::AndroidSafetyNet => return Err(WebauthnError::AttestationNotSupported),
+        AttestationFormat::None => (ParsedAttestationData::None, AttestationMetadata::None),
+    };
+
+    Ok((parsed_attestation, metadata))
+}
+
 impl WebauthnCore {
     /// ⚠️  ⚠️  ⚠️  THIS IS UNSAFE. AVOID USING THIS DIRECTLY ⚠️  ⚠️  ⚠️
     ///
@@ -619,35 +649,12 @@ impl WebauthnCore {
         debug!("attestation is: {:?}", &attest_format);
         debug!("attested credential data is: {:?}", &acd);
 
-        let (attestation_data, attestation_metadata) = match attest_format {
-            AttestationFormat::FIDOU2F => (
-                verify_fidou2f_attestation(acd, &data.attestation_object, &client_data_json_hash)?,
-                AttestationMetadata::None,
-            ),
-            AttestationFormat::Packed => {
-                verify_packed_attestation(acd, &data.attestation_object, &client_data_json_hash)?
-            }
-            // AttestationMetadata::None,
-            AttestationFormat::Tpm => {
-                verify_tpm_attestation(acd, &data.attestation_object, &client_data_json_hash)?
-            }
-            // AttestationMetadata::None,
-            AttestationFormat::AppleAnonymous => verify_apple_anonymous_attestation(
-                acd,
-                &data.attestation_object,
-                &client_data_json_hash,
-            )?,
-            // AttestationMetadata::None,
-            AttestationFormat::AndroidKey => verify_android_key_attestation(
-                acd,
-                &data.attestation_object,
-                &client_data_json_hash,
-            )?,
-            AttestationFormat::AndroidSafetyNet => {
-                return Err(WebauthnError::AttestationNotSupported)
-            }
-            AttestationFormat::None => (ParsedAttestationData::None, AttestationMetadata::None),
-        };
+        let (attestation_data, attestation_metadata) = verify_attestation(
+            acd,
+            &data.attestation_object,
+            &client_data_json_hash,
+            &attest_format,
+        )?;
 
         let credential: Credential = Credential::new(
             acd,
